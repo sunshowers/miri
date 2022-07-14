@@ -61,6 +61,11 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
         path_filter: path_filter.collect(),
         program: miri_path(),
         output_conflict_handling,
+        manifest_path: Some(std::env::current_dir()?.join("test_dependencies").join("Cargo.toml")),
+        dependency_builder: Some((
+            std::env::current_dir()?.join("miri"),
+            vec!["cargo".to_string()],
+        )),
     };
     ui_test::run_tests(config)
 }
