@@ -6,6 +6,7 @@ use std::{
 
 use crate::Config;
 
+/// Compiles dependencies and returns the crate names and corresponding rmeta files.
 pub fn build_dependencies(config: &Config) -> Result<Vec<(String, PathBuf)>> {
     let manifest_path = match &config.manifest_path {
         Some(path) => path,
@@ -16,16 +17,21 @@ pub fn build_dependencies(config: &Config) -> Result<Vec<(String, PathBuf)>> {
         None => (Path::new("cargo"), &[]),
     };
     let mut build = Command::new(program);
+    build.env_clear();
+    build.env("PATH", std::env::var_os("PATH").unwrap());
     build.args(args);
     build.arg("run");
     if let Some(target) = &config.target {
         build.arg(format!("--target={target}"));
     }
-    let output = build
+    build
         .arg(format!("--manifest-path={}", manifest_path.display()))
+        .arg("--target-dir=target/test_dependencies")
         .arg("--message-format=json")
-        .arg("-Zunstable-options")
-        .output()?;
+        .arg("-Zunstable-options");
+
+    let output = build.output()?;
+
     ensure!(output.status.success(), "{output:#?}");
     let output = output.stdout;
     let output = String::from_utf8(output)?;

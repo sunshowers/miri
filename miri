@@ -191,6 +191,7 @@ fmt)
         | xargs rustfmt +$TOOLCHAIN --edition=2021 --config-path "$MIRIDIR/rustfmt.toml" "$@"
     ;;
 cargo)
+    find_sysroot
     $CARGO run $CARGO_BUILD_FLAGS --manifest-path "$MIRIDIR"/cargo-miri/Cargo.toml -- miri "$@"
     ;;
 clippy)
