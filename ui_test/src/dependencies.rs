@@ -17,8 +17,10 @@ pub fn build_dependencies(config: &Config) -> Result<Vec<(String, PathBuf)>> {
         None => (Path::new("cargo"), &[], &[]),
     };
     let mut build = Command::new(program);
-    build.env_clear();
-    build.env("PATH", std::env::var_os("PATH").unwrap());
+
+    // Avoid poisoning the sysroot and causing unnecessary rebuilds.
+    build.env_remove("RUSTFLAGS");
+
     build.envs(envs.iter().map(|(k, v)| (k, v)));
     build.args(args);
     build.arg("run");

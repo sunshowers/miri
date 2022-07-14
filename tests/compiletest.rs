@@ -68,7 +68,7 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
                 std::env::current_dir()?.join("miri").display().to_string(),
                 "cargo".to_string(),
             ],
-            envs: vec![("MIRI_SYSROOT".to_string(), std::env::var("MIRI_SYSROOT").unwrap())],
+            envs: vec![],
         }),
     };
     ui_test::run_tests(config)
