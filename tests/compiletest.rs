@@ -63,8 +63,11 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
         output_conflict_handling,
         manifest_path: Some(std::env::current_dir()?.join("test_dependencies").join("Cargo.toml")),
         dependency_builder: Some(DependencyBuilder {
-            program: std::env::current_dir()?.join("miri"),
-            args: vec!["cargo".to_string()],
+            program: PathBuf::from("bash"),
+            args: vec![
+                std::env::current_dir()?.join("miri").display().to_string(),
+                "cargo".to_string(),
+            ],
             envs: vec![("MIRI_SYSROOT".to_string(), std::env::var("MIRI_SYSROOT").unwrap())],
         }),
     };
