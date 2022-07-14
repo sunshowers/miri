@@ -15,6 +15,9 @@ Just build miri. <flags> are passed to `cargo build`.
 ./miri check <flags>:
 Just check miri. <flags> are passed to `cargo check`.
 
+./miri cargo <flags>:
+Run `cargo miri <flags>`.
+
 ./miri test <flags>:
 Build miri, set up a sysroot and then run the test suite. <flags> are passed
 to the final `cargo test` invocation.
