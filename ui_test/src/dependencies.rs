@@ -13,7 +13,7 @@ pub fn build_dependencies(config: &Config) -> Result<Vec<(String, PathBuf)>> {
         None => return Ok(vec![]),
     };
     let (program, args, envs): (&Path, &[_], &[_]) = match &config.dependency_builder {
-        Some((path, args, envs)) => (path, args, envs),
+        Some(db) => (&db.program, &db.args, &db.envs),
         None => (Path::new("cargo"), &[], &[]),
     };
     let mut build = Command::new(program);

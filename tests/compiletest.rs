@@ -2,7 +2,7 @@ use colored::*;
 use regex::Regex;
 use std::env;
 use std::path::PathBuf;
-use ui_test::{color_eyre::Result, Config, Mode, OutputConflictHandling};
+use ui_test::{color_eyre::Result, Config, DependencyBuilder, Mode, OutputConflictHandling};
 
 fn miri_path() -> PathBuf {
     PathBuf::from(option_env!("MIRI").unwrap_or(env!("CARGO_BIN_EXE_miri")))
@@ -62,11 +62,11 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
         program: miri_path(),
         output_conflict_handling,
         manifest_path: Some(std::env::current_dir()?.join("test_dependencies").join("Cargo.toml")),
-        dependency_builder: Some((
-            std::env::current_dir()?.join("miri"),
-            vec!["cargo".to_string()],
-            vec![("MIRI_SYSROOT".to_string(), std::env::var("MIRI_SYSROOT").unwrap())],
-        )),
+        dependency_builder: Some(DependencyBuilder {
+            program: std::env::current_dir()?.join("miri"),
+            args: vec!["cargo".to_string()],
+            envs: vec![("MIRI_SYSROOT".to_string(), std::env::var("MIRI_SYSROOT").unwrap())],
+        }),
     };
     ui_test::run_tests(config)
 }
