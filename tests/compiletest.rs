@@ -65,6 +65,7 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
         dependency_builder: Some((
             std::env::current_dir()?.join("miri"),
             vec!["cargo".to_string()],
+            vec![("MIRI_SYSROOT".to_string(), std::env::var("MIRI_SYSROOT").unwrap())],
         )),
     };
     ui_test::run_tests(config)

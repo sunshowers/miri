@@ -1,4 +1,4 @@
-use color_eyre::eyre::{ensure, Result};
+use color_eyre::eyre::{bail, Result};
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -12,13 +12,14 @@ pub fn build_dependencies(config: &Config) -> Result<Vec<(String, PathBuf)>> {
         Some(path) => path,
         None => return Ok(vec![]),
     };
-    let (program, args): (&Path, &[_]) = match &config.dependency_builder {
-        Some((path, args)) => (path, args),
-        None => (Path::new("cargo"), &[]),
+    let (program, args, envs): (&Path, &[_], &[_]) = match &config.dependency_builder {
+        Some((path, args, envs)) => (path, args, envs),
+        None => (Path::new("cargo"), &[], &[]),
     };
     let mut build = Command::new(program);
     build.env_clear();
     build.env("PATH", std::env::var_os("PATH").unwrap());
+    build.envs(envs.iter().map(|(k, v)| (k, v)));
     build.args(args);
     build.arg("run");
     if let Some(target) = &config.target {
@@ -32,7 +33,12 @@ pub fn build_dependencies(config: &Config) -> Result<Vec<(String, PathBuf)>> {
 
     let output = build.output()?;
 
-    ensure!(output.status.success(), "{output:#?}");
+    if !output.status.success() {
+        let stdout = String::from_utf8(output.stdout)?;
+        let stderr = String::from_utf8(output.stderr)?;
+        bail!("failed to compile dependencies:\nstderr:\n{stderr}\n\nstdout:{stdout}");
+    }
+
     let output = output.stdout;
     let output = String::from_utf8(output)?;
     Ok(output

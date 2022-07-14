@@ -44,7 +44,7 @@ pub struct Config {
     pub manifest_path: Option<PathBuf>,
     /// Can be used to override what command to run instead of `cargo` to build the
     /// dependencies in `manifest_path`
-    pub dependency_builder: Option<(PathBuf, Vec<String>)>,
+    pub dependency_builder: Option<(PathBuf, Vec<String>, Vec<(String, String)>)>,
 }
 
 #[derive(Debug)]
