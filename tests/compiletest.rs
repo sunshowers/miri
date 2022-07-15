@@ -51,6 +51,8 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
     // Pass on all arguments as filters.
     let path_filter = std::env::args().skip(1);
 
+    let use_std = env::var_os("MIRI_NO_STD").is_none();
+
     let config = Config {
         args: flags,
         target,
@@ -61,7 +63,8 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
         path_filter: path_filter.collect(),
         program: miri_path(),
         output_conflict_handling,
-        manifest_path: Some(std::env::current_dir()?.join("test_dependencies").join("Cargo.toml")),
+        manifest_path: use_std
+            .then(|| std::env::current_dir().unwrap().join("test_dependencies").join("Cargo.toml")),
         dependency_builder: Some(DependencyBuilder {
             program: PathBuf::from("bash"),
             args: vec![
