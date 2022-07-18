@@ -38,6 +38,8 @@ pub struct Config {
     pub output_conflict_handling: OutputConflictHandling,
     /// Only run tests with one of these strings in their path/name
     pub path_filter: Vec<String>,
+    /// Print one character per test instead of one line
+    pub quiet: bool,
 }
 
 #[derive(Debug)]
@@ -96,10 +98,38 @@ pub fn run_tests(config: Config) -> Result<()> {
 
         // A channel for the messages emitted by the individual test threads.
         let (finish_file, finished_files) = crossbeam::channel::unbounded();
+        enum TestResult {
+            Ok,
+            Failed,
+            Ignored,
+        }
 
         s.spawn(|_| {
-            for msg in finished_files {
-                eprintln!("{msg}");
+            if config.quiet {
+                for (i, (_, result)) in finished_files.into_iter().enumerate() {
+                    // Humans start counting at 1
+                    let i = i + 1;
+                    match result {
+                        TestResult::Ok => eprint!("{}", ".".green()),
+                        TestResult::Failed => eprint!("{}", "F".red().bold()),
+                        TestResult::Ignored => eprint!("{}", "i".yellow()),
+                    }
+                    if i % 100 == 0 {
+                        eprintln!(" {i}");
+                    }
+                }
+            } else {
+                for (msg, result) in finished_files {
+                    eprint!("{msg} ... ");
+                    eprintln!(
+                        "{}",
+                        match result {
+                            TestResult::Ok => "ok".green(),
+                            TestResult::Failed => "FAILED".red().bold(),
+                            TestResult::Ignored => "ignored (in-test comment)".yellow(),
+                        }
+                    );
+                }
             }
         });
 
@@ -122,12 +152,7 @@ pub fn run_tests(config: Config) -> Result<()> {
                     // Ignore file if only/ignore rules do (not) apply
                     if !test_file_conditions(&comments, &target, &config) {
                         ignored.fetch_add(1, Ordering::Relaxed);
-                        let msg = format!(
-                            "{} ... {}",
-                            path.display(),
-                            "ignored (in-test comment)".yellow()
-                        );
-                        finish_file.send(msg)?;
+                        finish_file.send((path.display().to_string(), TestResult::Ignored))?;
                         continue;
                     }
                     // Run the test for all revisions
@@ -142,12 +167,11 @@ pub fn run_tests(config: Config) -> Result<()> {
                         if !revision.is_empty() {
                             write!(msg, "(revision `{revision}`) ").unwrap();
                         }
-                        write!(msg, "... ").unwrap();
                         if errors.is_empty() {
-                            write!(msg, "{}", "ok".green()).unwrap();
+                            finish_file.send((msg, TestResult::Ok))?;
                             succeeded.fetch_add(1, Ordering::Relaxed);
                         } else {
-                            write!(msg, "{}", "FAILED".red().bold()).unwrap();
+                            finish_file.send((msg, TestResult::Failed))?;
                             failures.lock().unwrap().push((
                                 path.clone(),
                                 m,
@@ -156,7 +180,6 @@ pub fn run_tests(config: Config) -> Result<()> {
                                 stderr,
                             ));
                         }
-                        finish_file.send(msg)?;
                     }
                 }
                 Ok(())
