@@ -94,11 +94,22 @@ pub fn run_tests(config: Config) -> Result<()> {
             drop(submit);
         });
 
+        // A channel for the messages emitted by the individual test threads.
+        let (finish_file, finished_files) = crossbeam::channel::unbounded();
+
+        s.spawn(|_| {
+            for msg in finished_files {
+                eprintln!("{msg}");
+            }
+        });
+
         let mut threads = vec![];
 
         // Create N worker threads that receive files to test.
         for _ in 0..std::thread::available_parallelism().unwrap().get() {
+            let finish_file = finish_file.clone();
             threads.push(s.spawn(|_| -> Result<()> {
+                let finish_file = finish_file;
                 for path in &receive {
                     if !config.path_filter.is_empty() {
                         let path_display = path.display().to_string();
@@ -111,11 +122,12 @@ pub fn run_tests(config: Config) -> Result<()> {
                     // Ignore file if only/ignore rules do (not) apply
                     if !test_file_conditions(&comments, &target, &config) {
                         ignored.fetch_add(1, Ordering::Relaxed);
-                        eprintln!(
+                        let msg = format!(
                             "{} ... {}",
                             path.display(),
                             "ignored (in-test comment)".yellow()
                         );
+                        finish_file.send(msg)?;
                         continue;
                     }
                     // Run the test for all revisions
@@ -132,10 +144,10 @@ pub fn run_tests(config: Config) -> Result<()> {
                         }
                         write!(msg, "... ").unwrap();
                         if errors.is_empty() {
-                            eprintln!("{msg}{}", "ok".green());
+                            write!(msg, "{}", "ok".green()).unwrap();
                             succeeded.fetch_add(1, Ordering::Relaxed);
                         } else {
-                            eprintln!("{msg}{}", "FAILED".red().bold());
+                            write!(msg, "{}", "FAILED".red().bold()).unwrap();
                             failures.lock().unwrap().push((
                                 path.clone(),
                                 m,
@@ -144,11 +156,13 @@ pub fn run_tests(config: Config) -> Result<()> {
                                 stderr,
                             ));
                         }
+                        finish_file.send(msg)?;
                     }
                 }
                 Ok(())
             }));
         }
+
         for thread in threads {
             thread.join().unwrap()?;
         }
