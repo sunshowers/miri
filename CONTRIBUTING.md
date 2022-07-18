@@ -28,6 +28,10 @@ install that exact version of rustc as a toolchain:
 This will set up a rustup toolchain called `miri` and set it as an override for
 the current directory.
 
+You can also create a `.check-everything` file (contents don't matter, can be empty), which
+will cause any `./miri` command to automatically call `rustup-toolchain`, `clippy` and `rustfmt`
+for you.
+
 [`rustup-toolchain-install-master`]: https://github.com/kennytm/rustup-toolchain-install-master
 
 ## Building and testing Miri

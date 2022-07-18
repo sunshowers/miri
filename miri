@@ -128,6 +128,26 @@ find_sysroot() {
     fi
 }
 
+# Run rustfmt on all tests and crates
+fmt() {
+    find "$MIRIDIR" -not \( -name target -prune \) -name '*.rs' \
+        | xargs rustfmt +$TOOLCHAIN --edition=2021 --config-path "$MIRIDIR/rustfmt.toml" "$@"
+}
+
+# Run clippy on all crates
+clippy() {
+    $CARGO clippy $CARGO_EXTRA_FLAGS --manifest-path "$MIRIDIR"/Cargo.toml --all-targets "$@"
+    $CARGO clippy $CARGO_EXTRA_FLAGS --manifest-path "$MIRIDIR"/ui_test/Cargo.toml --all-targets "$@"
+    $CARGO clippy $CARGO_EXTRA_FLAGS --manifest-path "$MIRIDIR"/cargo-miri/Cargo.toml "$@"
+}
+
+if test -f ".check-everything"; then
+    ./rustup-toolchain
+    fmt
+    clippy -- -D warnings
+fi
+
+
 ## Main
 
 # Run command.
@@ -183,13 +203,10 @@ run)
     exec $CARGO run $CARGO_EXTRA_FLAGS --manifest-path "$MIRIDIR"/Cargo.toml -- --sysroot "$MIRI_SYSROOT" $MIRIFLAGS "$@"
     ;;
 fmt)
-    find "$MIRIDIR" -not \( -name target -prune \) -name '*.rs' \
-        | xargs rustfmt +$TOOLCHAIN --edition=2021 --config-path "$MIRIDIR/rustfmt.toml" "$@"
+    fmt
     ;;
 clippy)
-    $CARGO clippy $CARGO_EXTRA_FLAGS --manifest-path "$MIRIDIR"/Cargo.toml --all-targets "$@"
-    $CARGO clippy $CARGO_EXTRA_FLAGS --manifest-path "$MIRIDIR"/ui_test/Cargo.toml --all-targets "$@"
-    $CARGO clippy $CARGO_EXTRA_FLAGS --manifest-path "$MIRIDIR"/cargo-miri/Cargo.toml "$@"
+    clippy
     ;;
 *)
     if [ -n "$COMMAND" ]; then
