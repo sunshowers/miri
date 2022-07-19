@@ -18,7 +18,7 @@ pub fn build_dependencies(config: &Config) -> Result<Vec<(String, PathBuf)>> {
     };
     let mut build = Command::new(program);
 
-    // Avoid poisoning the sysroot and causing unnecessary rebuilds.
+    // Avoid poisoning the target directory and causing unnecessary rebuilds.
     build.env_remove("RUSTFLAGS");
 
     build.envs(envs.iter().map(|(k, v)| (k, v)));
