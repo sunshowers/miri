@@ -11,7 +11,7 @@ note: inside `main` at $DIR/tokio_mvp.rs:LL:CC
    |
 LL | #[tokio::main]
    | ^^^^^^^^^^^^^^
-   = note: this error originates in the macro `syscall` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `syscall` which comes from the expansion of the attribute macro `tokio::main` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 note: some details are omitted, run with `MIRIFLAGS=-Zmiri-backtrace=full` for a verbose backtrace
 
