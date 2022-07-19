@@ -27,6 +27,16 @@ def normalize_stdout(str):
     str = str.replace("src\\", "src/") # normalize paths across platforms
     return re.sub("finished in \d+\.\d\ds", "finished in $TIME", str)
 
+def check_output(expected, actual, path, name):
+    if expected == actual:
+        return True
+    print(f"{path} did not match reference!")
+    print(f"--- BEGIN diff {name} ---")
+    for text in difflib.unified_diff(expected.split("\n"), actual.split("\n")):
+        print(text)
+    print(f"--- END diff {name} ---")
+    return False
+
 def test(name, cmd, stdout_ref, stderr_ref, stdin=b'', env={}):
     print("Testing {}...".format(name))
     ## Call `cargo miri`, capture all output
@@ -44,18 +54,9 @@ def test(name, cmd, stdout_ref, stderr_ref, stdin=b'', env={}):
     stderr = stderr.decode("UTF-8")
     stdout = normalize_stdout(stdout)
     expected_stdout = open(stdout_ref).read()
-    if p.returncode == 0 and stdout == expected_stdout and stderr == open(stderr_ref).read():
+    if p.returncode == 0 and check_output(expected_stdout, stdout, stdout_ref, "stdout") and check_output(open(stderr_ref).read(), stderr, stderr_ref, "stderr"):
         # All good!
         return
-    # Show output
-    print(f"{stdout_ref} or {stderr_ref} did not match reference!")
-    print("--- BEGIN test stdout ---")
-    for text in difflib.unified_diff(expected_stdout.split("\n"), stdout.split("\n")):
-        print(text)
-    print("--- END test stdout ---")
-    print("--- BEGIN test stderr ---")
-    print(stderr, end="")
-    print("--- END test stderr ---")
     fail("exit code was {}".format(p.returncode))
 
 def test_no_rebuild(name, cmd, env={}):
