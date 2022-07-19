@@ -1,6 +1,6 @@
 use colored::*;
 use regex::Regex;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{env, ffi::OsString};
 use ui_test::{color_eyre::Result, Config, DependencyBuilder, Mode, OutputConflictHandling};
 
@@ -64,13 +64,10 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
         program: miri_path(),
         output_conflict_handling,
         dependencies_crate_manifest_path: use_std
-            .then(|| std::env::current_dir().unwrap().join("test_dependencies").join("Cargo.toml")),
+            .then(|| Path::new("test_dependencies").join("Cargo.toml")),
         dependency_builder: Some(DependencyBuilder {
             program: PathBuf::from("bash"),
-            args: vec![
-                std::env::current_dir()?.join("miri").display().to_string(),
-                "cargo".to_string(),
-            ],
+            args: vec!["miri".to_string(), "cargo".to_string()],
             envs: vec![],
         }),
     };

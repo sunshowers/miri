@@ -104,7 +104,9 @@ pub fn build_dependencies(config: &Config) -> Result<Dependencies> {
         let root = metadata
             .packages
             .iter()
-            .find(|package| package.manifest_path.as_std_path() == manifest_path)
+            .find(|package| {
+                package.manifest_path.as_std_path() == manifest_path.canonicalize().unwrap()
+            })
             .unwrap();
 
         // Then go over all of its dependencies
