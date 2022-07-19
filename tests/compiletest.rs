@@ -1,7 +1,7 @@
 use colored::*;
 use regex::Regex;
-use std::env;
 use std::path::PathBuf;
+use std::{env, ffi::OsString};
 use ui_test::{color_eyre::Result, Config, DependencyBuilder, Mode, OutputConflictHandling};
 
 fn miri_path() -> PathBuf {
@@ -12,31 +12,31 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
     let in_rustc_test_suite = option_env!("RUSTC_STAGE").is_some();
 
     // Add some flags we always want.
-    let mut flags = Vec::new();
-    flags.push("--edition".to_owned());
-    flags.push("2018".to_owned());
+    let mut flags: Vec<OsString> = Vec::new();
+    flags.push("--edition".into());
+    flags.push("2018".into());
     if in_rustc_test_suite {
         // Less aggressive warnings to make the rustc toolstate management less painful.
         // (We often get warnings when e.g. a feature gets stabilized or some lint gets added/improved.)
-        flags.push("-Astable-features".to_owned());
-        flags.push("-Aunused".to_owned());
+        flags.push("-Astable-features".into());
+        flags.push("-Aunused".into());
     } else {
-        flags.push("-Dwarnings".to_owned());
-        flags.push("-Dunused".to_owned());
+        flags.push("-Dwarnings".into());
+        flags.push("-Dunused".into());
     }
-    if let Ok(sysroot) = env::var("MIRI_SYSROOT") {
-        flags.push("--sysroot".to_string());
+    if let Some(sysroot) = env::var_os("MIRI_SYSROOT") {
+        flags.push("--sysroot".into());
         flags.push(sysroot);
     }
     if let Ok(extra_flags) = env::var("MIRIFLAGS") {
         for flag in extra_flags.split_whitespace() {
-            flags.push(flag.to_string());
+            flags.push(flag.into());
         }
     }
-    flags.push("-Zui-testing".to_string());
+    flags.push("-Zui-testing".into());
     if let Some(target) = &target {
-        flags.push("--target".to_string());
-        flags.push(target.clone());
+        flags.push("--target".into());
+        flags.push(target.into());
     }
 
     let skip_ui_checks = env::var_os("MIRI_SKIP_UI_CHECKS").is_some();

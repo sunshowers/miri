@@ -1,6 +1,7 @@
 #![allow(clippy::enum_variant_names, clippy::useless_format, clippy::too_many_arguments)]
 
 use std::collections::VecDeque;
+use std::ffi::OsString;
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitStatus};
@@ -26,7 +27,7 @@ mod tests;
 #[derive(Debug)]
 pub struct Config {
     /// Arguments passed to the binary that is executed.
-    pub args: Vec<String>,
+    pub args: Vec<OsString>,
     /// `None` to run on the host, otherwise a target triple
     pub target: Option<String>,
     /// Filters applied to stderr output before processing it
@@ -75,10 +76,10 @@ pub fn run_tests(mut config: Config) -> Result<()> {
 
     let dependencies = build_dependencies(&config)?;
     for (name, dependency) in dependencies {
-        config.args.push("--extern".to_string());
-        config.args.push(format!("{name}={}", dependency.display()));
-        config.args.push("-L".to_string());
-        config.args.push(dependency.parent().unwrap().display().to_string());
+        config.args.push("--extern".into());
+        config.args.push(format!("{name}={}", dependency.display()).into());
+        config.args.push("-L".into());
+        config.args.push(dependency.parent().unwrap().display().to_string().into());
     }
     let config = config;
 
