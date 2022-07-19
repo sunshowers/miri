@@ -5,7 +5,7 @@ Assumes the `MIRI_SYSROOT` env var to be set appropriately,
 and the working directory to contain the cargo-miri-test project.
 '''
 
-import sys, subprocess, os, re
+import sys, subprocess, os, re, difflib
 
 CGREEN  = '\33[32m'
 CBOLD   = '\33[1m'
@@ -42,13 +42,16 @@ def test(name, cmd, stdout_ref, stderr_ref, stdin=b'', env={}):
     (stdout, stderr) = p.communicate(input=stdin)
     stdout = stdout.decode("UTF-8")
     stderr = stderr.decode("UTF-8")
-    if p.returncode == 0 and normalize_stdout(stdout) == open(stdout_ref).read() and stderr == open(stderr_ref).read():
+    stdout = normalize_stdout(stdout)
+    expected_stdout = open(stdout_ref).read()
+    if p.returncode == 0 and stdout == expected_stdout and stderr == open(stderr_ref).read():
         # All good!
         return
     # Show output
-    print("Test stdout or stderr did not match reference!")
+    print(f"{stdout_ref} or {stderr_ref} did not match reference!")
     print("--- BEGIN test stdout ---")
-    print(stdout, end="")
+    for text in difflib.unified_diff(expected_stdout.split("\n"), stdout.split("\n")):
+        print(text)
     print("--- END test stdout ---")
     print("--- BEGIN test stderr ---")
     print(stderr, end="")
