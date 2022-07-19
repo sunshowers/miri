@@ -1,3 +1,5 @@
+use rand::{rngs::SmallRng, Rng, SeedableRng};
+
 // Having more than 1 test does seem to make a difference
 // (i.e., this calls ptr::swap which having just one test does not).
 #[test]
@@ -16,6 +18,22 @@ fn simple2() {
 fn does_not_work_on_miri() {
     let x = 0u8;
     assert!(&x as *const _ as usize % 4 < 4);
+}
+
+// Make sure integration tests can access dev-dependencies
+#[test]
+fn entropy_rng() {
+    // Try seeding with "real" entropy.
+    let mut rng = SmallRng::from_entropy();
+    let _val = rng.gen::<i32>();
+    let _val = rng.gen::<isize>();
+    let _val = rng.gen::<i128>();
+
+    // Also try per-thread RNG.
+    let mut rng = rand::thread_rng();
+    let _val = rng.gen::<i32>();
+    let _val = rng.gen::<isize>();
+    let _val = rng.gen::<i128>();
 }
 
 #[test]
