@@ -41,7 +41,7 @@ pub fn build_dependencies(config: &Config) -> Result<Dependencies> {
         if let Some(target) = &config.target {
             cmd.arg(format!("--target={target}"));
         }
-        cmd.arg(format!("--manifest-path={}", manifest_path.display()));
+        cmd.arg("--manifest-path").arg(manifest_path);
     };
 
     setup_command(&mut build);

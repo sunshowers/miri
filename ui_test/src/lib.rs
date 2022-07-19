@@ -77,7 +77,10 @@ pub fn run_tests(mut config: Config) -> Result<()> {
     let dependencies = build_dependencies(&config)?;
     for (name, dependency) in dependencies.dependencies {
         config.args.push("--extern".into());
-        config.args.push(format!("{name}={}", dependency.display()).into());
+        let mut dep = OsString::from(name);
+        dep.push("=");
+        dep.push(dependency);
+        config.args.push(dep);
     }
     for import_path in dependencies.import_paths {
         config.args.push("-L".into());
