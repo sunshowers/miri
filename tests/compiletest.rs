@@ -66,8 +66,14 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
         dependencies_crate_manifest_path: use_std
             .then(|| Path::new("test_dependencies").join("Cargo.toml")),
         dependency_builder: Some(DependencyBuilder {
-            program: PathBuf::from("bash"),
-            args: vec!["miri".to_string(), "cargo".to_string()],
+            program: std::env::var_os("CARGO").unwrap().into(),
+            args: vec![
+                "run".into(),
+                "--manifest-path".into(),
+                "cargo-miri/Cargo.toml".into(),
+                "--".into(),
+                "miri".into(),
+            ],
             envs: vec![],
         }),
     };
