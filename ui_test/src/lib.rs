@@ -75,11 +75,13 @@ pub fn run_tests(mut config: Config) -> Result<()> {
     let target = config.target.clone().unwrap_or_else(|| config.get_host());
 
     let dependencies = build_dependencies(&config)?;
-    for (name, dependency) in dependencies {
+    for (name, dependency) in dependencies.dependencies {
         config.args.push("--extern".into());
         config.args.push(format!("{name}={}", dependency.display()).into());
+    }
+    for import_path in dependencies.import_paths {
         config.args.push("-L".into());
-        config.args.push(dependency.parent().unwrap().display().to_string().into());
+        config.args.push(import_path.into());
     }
     let config = config;
 
