@@ -28,6 +28,8 @@ pub fn build_dependencies(config: &Config) -> Result<Dependencies> {
     };
     let mut build = Command::new(program);
     build.args(args);
+    // HACK: we're using `cargo run` (or `cargo miri run`), because the latter does not
+    // support `cargo miri build` yet.
     build.arg("run");
 
     // Reusable closure for setting up the environment both for artifact generation and `cargo_metadata`
