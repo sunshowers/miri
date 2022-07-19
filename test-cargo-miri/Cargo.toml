@@ -18,6 +18,7 @@ issue_1760 = { path = "issue-1760" }
 issue_rust_86261 = { path = "issue-rust-86261" }
 
 [dev-dependencies]
+rand = { version = "0.8", features = ["small_rng"] }
 serde_derive = "1.0" # not actually used, but exercises some unique code path (`--extern` .so file)
 page_size = "0.4.1"
 

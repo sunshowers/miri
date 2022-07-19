@@ -1,5 +1,3 @@
-use rand::{rngs::SmallRng, Rng, SeedableRng};
-
 // Having more than 1 test does seem to make a difference
 // (i.e., this calls ptr::swap which having just one test does not).
 #[test]
