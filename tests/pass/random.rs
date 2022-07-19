@@ -1,5 +1,5 @@
 use rand::{rngs::SmallRng, Rng, SeedableRng};
-// mac-os `rand` does some pointer shenanigans
+// mac-os `getrandom_1` does some pointer shenanigans
 //@compile-flags: -Zmiri-permissive-provenance
 
 fn main() {
