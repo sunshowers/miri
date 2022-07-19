@@ -8,7 +8,7 @@ use crate::Config;
 
 /// Compiles dependencies and returns the crate names and corresponding rmeta files.
 pub fn build_dependencies(config: &Config) -> Result<Vec<(String, PathBuf)>> {
-    let manifest_path = match &config.manifest_path {
+    let manifest_path = match &config.dependencies_crate_manifest_path {
         Some(path) => path,
         None => return Ok(vec![]),
     };

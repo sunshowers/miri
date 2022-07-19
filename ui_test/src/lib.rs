@@ -42,7 +42,7 @@ pub struct Config {
     /// Only run tests with one of these strings in their path/name
     pub path_filter: Vec<String>,
     /// Path to a `Cargo.toml` that describes which dependencies the tests can access.
-    pub manifest_path: Option<PathBuf>,
+    pub dependencies_crate_manifest_path: Option<PathBuf>,
     /// Can be used to override what command to run instead of `cargo` to build the
     /// dependencies in `manifest_path`
     pub dependency_builder: Option<DependencyBuilder>,

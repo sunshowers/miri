@@ -63,7 +63,7 @@ fn run_tests(mode: Mode, path: &str, target: Option<String>) -> Result<()> {
         path_filter: path_filter.collect(),
         program: miri_path(),
         output_conflict_handling,
-        manifest_path: use_std
+        dependencies_crate_manifest_path: use_std
             .then(|| std::env::current_dir().unwrap().join("test_dependencies").join("Cargo.toml")),
         dependency_builder: Some(DependencyBuilder {
             program: PathBuf::from("bash"),
