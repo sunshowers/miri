@@ -105,7 +105,8 @@ pub fn build_dependencies(config: &Config) -> Result<Dependencies> {
             .packages
             .iter()
             .find(|package| {
-                package.manifest_path.as_std_path() == manifest_path.canonicalize().unwrap()
+                package.manifest_path.as_std_path().canonicalize().unwrap()
+                    == manifest_path.canonicalize().unwrap()
             })
             .unwrap();
 
