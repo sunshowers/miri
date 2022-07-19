@@ -32,15 +32,16 @@ pub fn build_dependencies(config: &Config) -> Result<Dependencies> {
     // support `cargo miri build` yet.
     build.arg("run");
 
+    if let Some(target) = &config.target {
+        build.arg(format!("--target={target}"));
+    }
+
     // Reusable closure for setting up the environment both for artifact generation and `cargo_metadata`
     let setup_command = |cmd: &mut Command| {
         // Avoid poisoning the target directory and causing unnecessary rebuilds.
         cmd.env_remove("RUSTFLAGS");
 
         cmd.envs(envs.iter().map(|(k, v)| (k, v)));
-        if let Some(target) = &config.target {
-            cmd.arg(format!("--target={target}"));
-        }
         cmd.arg("--manifest-path").arg(manifest_path);
     };
 
